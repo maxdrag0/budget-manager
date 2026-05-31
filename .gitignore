@@ -39,3 +39,13 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# claves
+.env
+
+# apuntes
+zAntesDePublicar.txt
+zApuntes.txt
+zApuntesExpoLocation.txt
+zApuntesSqlLite.txt
+zApuntesStore.txt
