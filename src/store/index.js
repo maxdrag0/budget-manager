@@ -4,6 +4,7 @@ import movementsReducer from "./movementsSlice/movementsSlice";
 import incomesReducer from "./incomesSlice/incomesSlice";
 import authReducer from "./authSlice/authSlice";
 import userReducer from "./userSlice/userSlice";
+import periodReducer from "./periodSlice/periodSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     incomes: incomesReducer,
     auth: authReducer,
     user: userReducer,
+    period: periodReducer,
   },
 });
