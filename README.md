@@ -1,6 +1,6 @@
 # Sumerios - Gestión de Gastos 📊
 
-Sumerios es una aplicación móvil diseñada para llevar un control estricto de finanzas personales y profesionales. Desarrollada con un enfoque **Offline-First**, permite a los usuarios registrar ingresos y egresos, adjuntar comprobantes fotográficos y visualizar balances mensuales de manera instantánea, sin depender de una conexión a internet.
+Budget Manager es una aplicación móvil diseñada para llevar un control estricto de finanzas personales y profesionales. Desarrollada con un enfoque **Offline-First**, permite a los usuarios registrar ingresos y egresos, adjuntar comprobantes fotográficos y visualizar balances mensuales de manera instantánea, sin depender de una conexión a internet.
 
 ## 🚀 Características Principales
 
@@ -47,7 +47,7 @@ Sigue estos pasos para ejecutar el proyecto en tu entorno local:
 
 1. **Clonar el repositorio**
    \`\`\`bash
-   git clone https://github.com/tu-usuario/sumerios-app.git
+   git clone https://github.com/maxdrag0/budget-manager
    cd sumerios-app
    \`\`\`
 
@@ -76,5 +76,5 @@ Sigue estos pasos para ejecutar el proyecto en tu entorno local:
 
 ## 👨‍💻 Autor
 
-**Maximiliano Drago** - [LinkedIn](Enlace a tu perfil)
-- [GitHub](Enlace a tu GitHub)
+**Maximiliano Drago** - [[LinkedIn](Enlace a tu perfil)](https://www.linkedin.com/in/maximiliano-drago/es/)
+- [GitHub][(Enlace a tu GitHub)](https://github.com/maxdrag0)
