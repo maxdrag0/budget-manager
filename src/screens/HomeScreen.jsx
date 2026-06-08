@@ -19,6 +19,13 @@ import {
 
 import { usePeriodo } from "@/hooks/usePeriodo";
 import { useTheme } from "@/hooks/useTheme";
+import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
+
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-TU_ID_AQUÍ";
+
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 
 export default function HomeScreen() {
   const route = useRoute();
@@ -40,6 +47,10 @@ export default function HomeScreen() {
   const userId = useSelector((state) => state.auth.uid);
   const movements = useSelector((state) => state.movements.value);
   const incomes = useSelector((state) => state.incomes.value);
+  const isPremium = useSelector((state) => state.user.isPremium);
+
+  const [loaded, setLoaded] = useState(false);
+  const [pendingModalOpen, setPendingModalOpen] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [incomeModalVisible, setIncomeModalVisible] = useState(false);
@@ -105,6 +116,49 @@ export default function HomeScreen() {
       cargarDatosDelPeriodo(userId, currentPeriod, dispatch);
     }
   }, [userId, currentPeriod]);
+
+  // Cargar anuncio intersticial si no es premium
+  useEffect(() => {
+    if (isPremium) return;
+
+    const unsubscribe = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+      setLoaded(true);
+    });
+
+    const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+      setLoaded(false);
+      interstitial.load(); // Recargar para la próxima vez
+      setPendingModalOpen(true);
+    });
+
+    interstitial.load();
+
+    return () => {
+      unsubscribe();
+      unsubscribeClosed();
+    };
+  }, [isPremium]);
+
+  useEffect(() => {
+    if (pendingModalOpen) {
+      openModalDirectly();
+      setPendingModalOpen(false);
+    }
+  }, [pendingModalOpen]);
+
+  const openModalDirectly = () => {
+    setModalType("egreso");
+    setMovementToEdit(null);
+    setModalVisible(true);
+  };
+
+  const handleFabPress = () => {
+    if (!isPremium && loaded) {
+      interstitial.show();
+    } else {
+      openModalDirectly();
+    }
+  };
 
   // Datos derivados de Redux
   const sumaGastos = movements
@@ -238,11 +292,7 @@ export default function HomeScreen() {
         {/* Speed Dial / FABs */}
         <View style={localStyles.fabContainer}>
           <FAB
-            onPress={() => {
-              setModalType("egreso"); // Por defecto abre en egreso
-              setMovementToEdit(null);
-              setModalVisible(true);
-            }}
+            onPress={handleFabPress}
             iconName="add"
             bgColor={colors.primary}
             iconColor="#fff"

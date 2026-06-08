@@ -19,6 +19,7 @@ import {
   guardarPerfilUsuario,
   eliminarFotoPerfilUsuario,
 } from "@/controller/controller";
+import { setPremium } from "@/store/userSlice/userSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useCamera } from "@/hooks/useCamera";
 import { useTheme } from "@/hooks/useTheme";
@@ -34,6 +35,12 @@ export default function ProfileScreen() {
   const authEmail = useSelector((state) => state.auth.email);
   const userEmail = useSelector((state) => state.user.email);
   const email = userEmail || authEmail;
+
+  const isPremium = useSelector((state) => state.user.isPremium);
+
+  const togglePremium = () => {
+    dispatch(setPremium(!isPremium));
+  };
 
   const [nameInput, setNameInput] = useState(name || "");
   const [lastnameInput, setLastnameInput] = useState(lastname || "");
@@ -244,6 +251,33 @@ export default function ProfileScreen() {
             onValueChange={toggleTheme}
             trackColor={{ false: "#dee2e6", true: colors.primary }}
             thumbColor={isDark ? "#fff" : "#f8f9fa"}
+          />
+        </View>
+      </View>
+
+      {/* MOCK: Activar Premium (Para Pruebas) */}
+      <View
+        style={[
+          styles.themeToggleContainer,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <View style={styles.themeToggleRow}>
+          <View style={styles.themeToggleInfo}>
+            <Ionicons
+              name={"star"}
+              size={22}
+              color={"#f59e0b"}
+            />
+            <Text style={[styles.themeToggleLabel, { color: colors.text }]}>
+              Modo Premium (Pruebas)
+            </Text>
+          </View>
+          <Switch
+            value={isPremium}
+            onValueChange={togglePremium}
+            trackColor={{ false: "#dee2e6", true: colors.primary }}
+            thumbColor={isPremium ? "#fff" : "#f8f9fa"}
           />
         </View>
       </View>

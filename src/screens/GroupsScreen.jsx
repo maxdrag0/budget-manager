@@ -26,6 +26,7 @@ export default function GroupsScreen() {
 
   const userId = useSelector((state) => state.auth.uid);
   const groups = useSelector((state) => state.groups.groups);
+  const isPremium = useSelector((state) => state.user.isPremium);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [joinModalVisible, setJoinModalVisible] = useState(false);
@@ -34,9 +35,17 @@ export default function GroupsScreen() {
 
   useEffect(() => {
     if (inviteGroupId) {
-      setJoinModalVisible(true);
+      if (!isPremium) {
+        Alert.alert(
+          "Suscripción Requerida",
+          "Para unirte a un grupo y dividir gastos, debes tener la suscripción Premium."
+        );
+        navigation.setParams({ inviteGroupId: undefined });
+      } else {
+        setJoinModalVisible(true);
+      }
     }
-  }, [inviteGroupId]);
+  }, [inviteGroupId, isPremium]);
 
   useFocusEffect(
     useCallback(() => {
@@ -139,7 +148,16 @@ export default function GroupsScreen() {
       )}
 
       <FAB
-        onPress={() => setModalVisible(true)}
+        onPress={() => {
+          if (!isPremium) {
+            Alert.alert(
+              "Función Premium",
+              "Para crear grupos ilimitados y dividir gastos con tus amigos, debes adquirir la suscripción Premium."
+            );
+          } else {
+            setModalVisible(true);
+          }
+        }}
         iconName="add"
         bgColor={colors.primary}
         iconColor="#fff"

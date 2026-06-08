@@ -10,6 +10,9 @@ import { useAuthListener } from "@/hooks/useAuthListener";
 import { View } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
 
+import AdBanner from "@/components/Ads/AdBanner";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 export default function RootNavigator() {
   const isLocalReady = useAppInitialization();
   useAuthListener();
@@ -64,7 +67,16 @@ export default function RootNavigator() {
 
   return (
     <NavigationContainer linking={linking}>
-      {isAuthenticated ? <TabNavigator /> : <AuthStack />}
+      {isAuthenticated ? (
+        <View style={{ flex: 1 }}>
+          <SafeAreaView edges={['top']} style={{ backgroundColor: "#fff" }}>
+            <AdBanner />
+          </SafeAreaView>
+          <TabNavigator />
+        </View>
+      ) : (
+        <AuthStack />
+      )}
     </NavigationContainer>
   );
 }
