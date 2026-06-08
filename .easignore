@@ -41,4 +41,11 @@ yarn-error.*
 /android
 
 # claves
-.env
+# .env
+
+# apuntes
+zAntesDePublicar.txt
+zApuntes.txt
+zApuntesExpoLocation.txt
+zApuntesSqlLite.txt
+zApuntesStore.txt
