@@ -21,7 +21,7 @@ import { usePeriodo } from "@/hooks/usePeriodo";
 import { useTheme } from "@/hooks/useTheme";
 import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-TU_ID_AQUÍ";
+const adUnitId = TestIds.INTERSTITIAL;
 
 const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: true,

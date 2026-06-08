@@ -3,9 +3,9 @@ import { View } from "react-native";
 import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
 import { useSelector } from "react-redux";
 
-// En desarrollo usamos el ID de prueba de Google. 
-// Para producción, se debe usar tu ID real.
-const adUnitId = __DEV__ ? TestIds.BANNER : "ca-app-pub-TU_ID_AQUÍ";
+// Siempre usamos el ID de prueba de Google por ahora para evitar crashes en producción.
+// Cuando tengas el ID real, cámbialo aquí.
+const adUnitId = TestIds.BANNER;
 
 export default function AdBanner() {
   const isPremium = useSelector((state) => state.user.isPremium);
