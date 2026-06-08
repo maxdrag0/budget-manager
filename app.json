@@ -1,14 +1,15 @@
 {
   "expo": {
     "name": "Budget Manager",
-    "slug": "Budget Manager",
+    "slug": "budget-manager",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "budgetmanager",
     "splash": {
       "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
@@ -20,7 +21,8 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.ar.mad.budgetmanager"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -30,6 +32,11 @@
       "expo-sqlite",
       "expo-secure-store",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "82639833-e516-4df7-b4e7-32da3ea9631f"
+      }
+    }
   }
 }

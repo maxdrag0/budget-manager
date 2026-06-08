@@ -1,14 +1,15 @@
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { View, StyleSheet, PanResponder } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { View, StyleSheet, PanResponder, Text, Pressable } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import styles from "@/styles/styles";
 import MonthBalance from "@/components/Home/MonthBalance";
 import MonthSelector from "@/components/Home/MonthSelector";
 import MovementsFlatList from "@/components/Movement/MovementsFlatList";
 import ModalMovement from "@/components/Movement/ModalMovement";
 import ModalIngreso from "@/components/Ingresos/ModalIngreso";
+import FAB from "@/components/Home/FAB";
+import CategoriesChart from "@/components/Categories/CategoriesChart";
 import {
   cargarDatosDelPeriodo,
   guardarMovimiento,
@@ -17,11 +18,14 @@ import {
 } from "@/controller/controller";
 
 import { usePeriodo } from "@/hooks/usePeriodo";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function HomeScreen() {
   const route = useRoute();
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   const {
     month,
@@ -42,6 +46,8 @@ export default function HomeScreen() {
 
   const [modalType, setModalType] = useState("egreso");
   const [movementToEdit, setMovementToEdit] = useState(null);
+  
+  const [viewMode, setViewMode] = useState("movimientos"); // "movimientos" | "grafico"
 
   const handlersRef = useRef({ handlePrevMonth, handleNextMonth, handleToday });
 
@@ -156,7 +162,13 @@ export default function HomeScreen() {
 
   return (
     <>
-      <SafeAreaView style={styles.safeArea} {...panResponder.panHandlers}>
+      <View
+        style={[
+          localStyles.safeArea,
+          { backgroundColor: colors.background, paddingTop: insets.top },
+        ]}
+        {...panResponder.panHandlers}
+      >
         <MonthSelector
           currentMonth={month}
           currentYear={year}
@@ -165,24 +177,79 @@ export default function HomeScreen() {
           onNext={handleNextMonth}
         />
 
-        <View style={localStyles.balanceWrapper}>
-          <MonthBalance
-            income={ingresoDelMes}
-            outcome={sumaGastos}
-            onEditIncome={() => setIncomeModalVisible(true)}
-          />
+        <View style={localStyles.segmentedControlContainer}>
+          <View style={[localStyles.segmentedControl, { backgroundColor: colors.inputBackground }]}>
+            <Pressable
+              style={[
+                localStyles.segmentButton,
+                viewMode === "movimientos" && [localStyles.segmentButtonActive, { backgroundColor: colors.card, shadowColor: "#000" }]
+              ]}
+              onPress={() => setViewMode("movimientos")}
+            >
+              <Text style={[
+                localStyles.segmentText,
+                { color: viewMode === "movimientos" ? colors.text : colors.textMuted },
+                viewMode === "movimientos" && localStyles.segmentTextActive
+              ]}>Movimientos</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                localStyles.segmentButton,
+                viewMode === "grafico" && [localStyles.segmentButtonActive, { backgroundColor: colors.card, shadowColor: "#000" }]
+              ]}
+              onPress={() => setViewMode("grafico")}
+            >
+              <Text style={[
+                localStyles.segmentText,
+                { color: viewMode === "grafico" ? colors.text : colors.textMuted },
+                viewMode === "grafico" && localStyles.segmentTextActive
+              ]}>Gráfico</Text>
+            </Pressable>
+          </View>
         </View>
-        <View style={localStyles.listWrapper}>
-          <MovementsFlatList
-            items={movements}
-            onEditMovement={(movement) => {
-              setMovementToEdit(movement);
+
+        {viewMode === "movimientos" ? (
+          <>
+            <View style={localStyles.balanceWrapper}>
+              <MonthBalance
+                income={ingresoDelMes}
+                outcome={sumaGastos}
+                onEditIncome={() => setIncomeModalVisible(true)}
+              />
+            </View>
+            <View style={localStyles.listWrapper}>
+              <MovementsFlatList
+                items={movements}
+                onEditMovement={(movement) => {
+                  setMovementToEdit(movement);
+                  setModalType(movement.tipo); // Fix: set correct type when editing
+                  setModalVisible(true);
+                }}
+                onDeleteMultiple={handleEliminarMovimientosMultiples}
+              />
+            </View>
+          </>
+        ) : (
+          <View style={localStyles.chartWrapper}>
+            <CategoriesChart movements={movements} />
+          </View>
+        )}
+
+        {/* Speed Dial / FABs */}
+        <View style={localStyles.fabContainer}>
+          <FAB
+            onPress={() => {
+              setModalType("egreso"); // Por defecto abre en egreso
+              setMovementToEdit(null);
               setModalVisible(true);
             }}
-            onDeleteMultiple={handleEliminarMovimientosMultiples}
+            iconName="add"
+            bgColor={colors.primary}
+            iconColor="#fff"
+            size={60}
           />
         </View>
-      </SafeAreaView>
+      </View>
 
       {/* Modal para crear/editar gasto */}
       <ModalMovement
@@ -211,6 +278,9 @@ export default function HomeScreen() {
 }
 
 const localStyles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   balanceWrapper: {
     paddingHorizontal: 10,
     zIndex: 1,
@@ -218,5 +288,45 @@ const localStyles = StyleSheet.create({
   listWrapper: {
     flex: 1,
     marginTop: 5,
+  },
+  fabContainer: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 12,
+  },
+  segmentedControlContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  segmentedControl: {
+    flexDirection: "row",
+    borderRadius: 10,
+    padding: 3,
+  },
+  segmentButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  segmentButtonActive: {
+    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  segmentText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  segmentTextActive: {
+    fontWeight: "700",
+  },
+  chartWrapper: {
+    flex: 1,
   },
 });

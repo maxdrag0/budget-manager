@@ -3,12 +3,14 @@ import { useState } from "react";
 import { FlatList, View, StyleSheet, Pressable, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import MovementCard from "./MovementCard";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function MovementsFlatList({
   items,
   onEditMovement,
   onDeleteMultiple,
 }) {
+  const { colors } = useTheme();
   const [selectedIds, setSelectedIds] = useState([]);
 
   const isSelectMode = selectedIds.length > 0;
@@ -56,11 +58,11 @@ export default function MovementsFlatList({
         )}
         keyExtractor={(item) => item.id ?? Math.random().toString()}
         contentContainerStyle={{
-          paddingHorizontal: 15,
-          paddingVertical: 10,
+          paddingHorizontal: 10,
+          paddingVertical: 4,
           paddingBottom: 80,
         }}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
         showsVerticalScrollIndicator={false}
       />
       {isSelectMode && (

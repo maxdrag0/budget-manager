@@ -9,34 +9,42 @@ import {
   Pressable,
   Image,
   TextInput,
+  Switch,
+  Modal,
 } from "react-native";
 import { logout } from "@/services/firebase/authService";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import ImageSelector from "@/components/ImageSelector";
 import {
   guardarPerfilUsuario,
   eliminarFotoPerfilUsuario,
 } from "@/controller/controller";
 import { Ionicons } from "@expo/vector-icons";
 import { useCamera } from "@/hooks/useCamera";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function ProfileScreen() {
   const dispatch = useDispatch();
+  const { colors, isDark, toggleTheme } = useTheme();
 
   const userId = useSelector((state) => state.auth.uid);
   const photoURL = useSelector((state) => state.user.photoURL);
   const name = useSelector((state) => state.user.name);
   const lastname = useSelector((state) => state.user.lastname);
-  const email = useSelector((state) => state.user.email || state.auth.email);
+  const authEmail = useSelector((state) => state.auth.email);
+  const userEmail = useSelector((state) => state.user.email);
+  const email = userEmail || authEmail;
 
   const [nameInput, setNameInput] = useState(name || "");
   const [lastnameInput, setLastnameInput] = useState(lastname || "");
   const [emailInput, setEmailInput] = useState(email || "");
 
+  // Nuevo estado para controlar si estamos en modo edición de datos
   const [isEditing, setIsEditing] = useState(false);
+
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
   const {
     imageUri,
@@ -54,6 +62,7 @@ export default function ProfileScreen() {
     }
   };
 
+  // Guardar foto de perfil independientemente
   const manejarSeleccionImagen = async (uri) => {
     if (!userId) {
       Alert.alert("Error", "No se pudo identificar al usuario.");
@@ -117,6 +126,7 @@ export default function ProfileScreen() {
     );
   };
 
+  // Guardar datos de texto
   const handleGuardarCambios = async () => {
     if (!userId) return;
     setIsSaving(true);
@@ -128,11 +138,12 @@ export default function ProfileScreen() {
           name: nameInput,
           lastname: lastnameInput,
           email: emailInput,
-          photoLocalUri: null, // No cambiamos la foto en este guardado manual
+          photoLocalUri: null,
         },
         dispatch,
       );
       Alert.alert("Éxito", "Perfil actualizado correctamente.");
+      setIsEditing(false); // Salir del modo edición al guardar con éxito
     } catch (error) {
       console.error("Error al guardar perfil:", error);
       Alert.alert("Error", "No se pudo actualizar el perfil.");
@@ -142,6 +153,7 @@ export default function ProfileScreen() {
   };
 
   const handleCancelarEdicion = () => {
+    // Restaurar los valores originales
     setNameInput(name || "");
     setLastnameInput(lastname || "");
     setIsEditing(false);
@@ -156,97 +168,211 @@ export default function ProfileScreen() {
   const fotoAMostrar = imageUri || photoURL;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Mi Perfil</Text>
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { backgroundColor: colors.background },
+      ]}
+    >
+      {/* Avatar Section */}
       <View style={styles.avatarSection}>
-        <View style={styles.avatarWrapper}>
+        <View
+          style={[styles.avatarWrapper, { backgroundColor: colors.border }]}
+        >
           {isLoadingImage || isUploading ? (
             <ActivityIndicator
               size="large"
-              color="#0d6efd"
+              color={colors.primary}
               style={styles.avatarLoader}
             />
           ) : fotoAMostrar ? (
-            <Image source={{ uri: fotoAMostrar }} style={styles.avatarImage} />
+            <Pressable onPress={() => setIsImageModalVisible(true)}>
+              <Image source={{ uri: fotoAMostrar }} style={styles.avatarImage} />
+            </Pressable>
           ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={48} color="#999" />
+            <View
+              style={[
+                styles.avatarPlaceholder,
+                { backgroundColor: colors.chipBackground },
+              ]}
+            >
+              <Ionicons name="person" size={48} color={colors.textMuted} />
             </View>
           )}
+
           <Pressable
             onPress={handlePressEditarFoto}
-            style={styles.editPhotoButton}
+            style={[
+              styles.editPhotoButton,
+              {
+                backgroundColor: colors.primary,
+                borderColor: colors.background,
+              },
+            ]}
             hitSlop={10}
           >
             <Ionicons name="camera-outline" size={16} color="#fff" />
           </Pressable>
         </View>
         {isUploading && (
-          <Text style={styles.uploadingText}>Subiendo foto...</Text>
+          <Text style={[styles.uploadingText, { color: colors.primary }]}>
+            Subiendo foto...
+          </Text>
         )}
       </View>
+
+      {/* Toggle Modo Oscuro */}
+      <View
+        style={[
+          styles.themeToggleContainer,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <View style={styles.themeToggleRow}>
+          <View style={styles.themeToggleInfo}>
+            <Ionicons
+              name={isDark ? "moon" : "sunny"}
+              size={22}
+              color={isDark ? "#fbbf24" : "#f59e0b"}
+            />
+            <Text style={[styles.themeToggleLabel, { color: colors.text }]}>
+              Modo Oscuro
+            </Text>
+          </View>
+          <Switch
+            value={isDark}
+            onValueChange={toggleTheme}
+            trackColor={{ false: "#dee2e6", true: colors.primary }}
+            thumbColor={isDark ? "#fff" : "#f8f9fa"}
+          />
+        </View>
+      </View>
+
+      {/* Datos Personales */}
       <View style={styles.formContainer}>
-        <View style={styles.formHeader}>
-          <Text style={styles.sectionTitle}>Datos Personales</Text>
+        <View
+          style={[styles.formHeader, { borderBottomColor: colors.separator }]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Datos Personales
+          </Text>
           {!isEditing && (
             <Pressable
               onPress={() => setIsEditing(true)}
               style={styles.editDataBtn}
             >
-              <Ionicons name="pencil" size={18} color="#0d6efd" />
-              <Text style={styles.editDataText}>Editar</Text>
+              <Ionicons name="pencil" size={18} color={colors.primary} />
+              <Text style={[styles.editDataText, { color: colors.primary }]}>
+                Editar
+              </Text>
             </Pressable>
           )}
         </View>
+
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Nombre</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            Nombre
+          </Text>
           {isEditing ? (
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.inputBorder,
+                  backgroundColor: colors.inputBackground,
+                  color: colors.inputText,
+                },
+              ]}
               value={nameInput}
               onChangeText={setNameInput}
               placeholder="Nombre"
-              placeholderTextColor="#adb5bd"
+              placeholderTextColor={colors.placeholder}
             />
           ) : (
-            <Text style={styles.textValue}>
+            <Text
+              style={[
+                styles.textValue,
+                {
+                  color: colors.text,
+                  backgroundColor: colors.inputBackground,
+                },
+              ]}
+            >
               {nameInput || "No especificado"}
             </Text>
           )}
         </View>
+
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Apellido</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            Apellido
+          </Text>
           {isEditing ? (
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.inputBorder,
+                  backgroundColor: colors.inputBackground,
+                  color: colors.inputText,
+                },
+              ]}
               value={lastnameInput}
               onChangeText={setLastnameInput}
               placeholder="Apellido"
-              placeholderTextColor="#adb5bd"
+              placeholderTextColor={colors.placeholder}
             />
           ) : (
-            <Text style={styles.textValue}>
+            <Text
+              style={[
+                styles.textValue,
+                {
+                  color: colors.text,
+                  backgroundColor: colors.inputBackground,
+                },
+              ]}
+            >
               {lastnameInput || "No especificado"}
             </Text>
           )}
         </View>
+
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>
+            Email
+          </Text>
           {/* El email siempre es de solo lectura o texto simple */}
           {isEditing ? (
             <TextInput
-              style={[styles.input, styles.inputDisabled]}
+              style={[
+                styles.input,
+                styles.inputDisabled,
+                {
+                  borderColor: colors.inputBorder,
+                  backgroundColor: colors.chipBackground,
+                  color: colors.textSecondary,
+                },
+              ]}
               value={emailInput}
               editable={false}
               placeholder="Email"
-              placeholderTextColor="#adb5bd"
+              placeholderTextColor={colors.placeholder}
             />
           ) : (
-            <Text style={styles.textValue}>
+            <Text
+              style={[
+                styles.textValue,
+                {
+                  color: colors.text,
+                  backgroundColor: colors.inputBackground,
+                },
+              ]}
+            >
               {emailInput || "No especificado"}
             </Text>
           )}
         </View>
+
         {/* Botones de acción cuando está en modo edición */}
         {isEditing && (
           <View style={styles.actionButtons}>
@@ -260,7 +386,7 @@ export default function ProfileScreen() {
             <View style={styles.buttonWrapper}>
               <Button
                 title={isSaving ? "Guardando..." : "Guardar Cambios"}
-                color="#0d6efd"
+                color={colors.primary}
                 onPress={handleGuardarCambios}
                 disabled={isSaving}
               />
@@ -268,30 +394,66 @@ export default function ProfileScreen() {
           </View>
         )}
       </View>
+
       <View style={styles.logoutContainer}>
         <Button color="tomato" title="Cerrar Sesión" onPress={handleLogout} />
       </View>
+
+      {/* Full Screen Image Modal */}
+      <Modal
+        visible={isImageModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsImageModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <Pressable style={styles.modalCloseArea} onPress={() => setIsImageModalVisible(false)} />
+          <Image source={{ uri: fotoAMostrar }} style={styles.fullScreenImage} resizeMode="contain" />
+          <Pressable style={styles.closeButton} onPress={() => setIsImageModalVisible(false)}>
+            <Ionicons name="close" size={32} color="#fff" />
+          </Pressable>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
+
 const styles = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalCloseArea: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  fullScreenImage: {
+    width: "100%",
+    height: "80%",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    padding: 10,
+  },
   container: {
     flexGrow: 1,
     alignItems: "center",
-    backgroundColor: "#ffffff",
+    justifyContent: "center",
     padding: 24,
-    paddingBottom: 40,
+    paddingBottom: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
     marginBottom: 30,
     marginTop: 10,
-    color: "#333",
   },
   avatarSection: {
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 20,
   },
   avatarWrapper: {
     position: "relative",
@@ -303,7 +465,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
-    backgroundColor: "#e0e0e0",
   },
   avatarImage: {
     width: 120,
@@ -314,7 +475,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#e9ecef",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -327,21 +487,41 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: "#0d6efd",
     width: 36,
     height: 36,
     borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 3,
-    borderColor: "#fff",
   },
   uploadingText: {
     marginTop: 8,
     fontSize: 12,
-    color: "#0d6efd",
     fontWeight: "500",
   },
+  // Toggle de Modo Oscuro
+  themeToggleContainer: {
+    width: "100%",
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 20,
+  },
+  themeToggleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  themeToggleInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  themeToggleLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Form
   formContainer: {
     width: "100%",
     gap: 20,
@@ -353,13 +533,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
     paddingBottom: 10,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
   },
   editDataBtn: {
     flexDirection: "row",
@@ -367,7 +545,6 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   editDataText: {
-    color: "#0d6efd",
     fontWeight: "600",
   },
   inputGroup: {
@@ -375,34 +552,25 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: "#6c757d",
     marginBottom: 6,
     fontWeight: "500",
   },
   textValue: {
     fontSize: 16,
-    color: "#333",
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: "#f8f9fa",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "transparent",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ced4da",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    backgroundColor: "#fff",
-    color: "#333",
   },
-  inputDisabled: {
-    backgroundColor: "#e9ecef",
-    color: "#6c757d",
-  },
+  inputDisabled: {},
   actionButtons: {
     flexDirection: "row",
     justifyContent: "space-between",

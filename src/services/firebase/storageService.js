@@ -62,3 +62,18 @@ export const uploadProfilePhoto = async (userId, localUri) => {
     return null;
   }
 };
+
+export const uploadGroupExpensePhoto = async (groupId, expenseId, localUri) => {
+  try {
+    if (!localUri) return null;
+    const fileRef = ref(storage, `groups/${groupId}/expenses/${expenseId}.jpg`);
+    const downloadURL = await uploadFileToStorage(fileRef, localUri);
+    return downloadURL;
+  } catch (error) {
+    console.error(
+      "Error subiendo foto de gasto de grupo a Firebase Storage:",
+      error,
+    );
+    return null;
+  }
+};

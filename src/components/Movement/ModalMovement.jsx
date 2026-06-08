@@ -43,6 +43,7 @@ export default function ModalMovement({
   periodo,
   movementToEdit,
 }) {
+  const [localTipo, setLocalTipo] = useState(tipo);
   const [concepto, setConcepto] = useState("");
   const [monto, setMonto] = useState("");
   const [fecha, setFecha] = useState(getDefaultDateForPeriod(periodo));
@@ -53,7 +54,7 @@ export default function ModalMovement({
   const [isSaving, setIsSaving] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const categoriasFiltradas = CATEGORIES.filter((cat) =>
-    tipo === "ingreso" ? cat.id >= 101 : cat.id < 100,
+    localTipo === "ingreso" ? cat.id >= 101 : cat.id < 100,
   );
 
   const {
@@ -66,6 +67,7 @@ export default function ModalMovement({
   } = useCamera();
 
   useEffect(() => {
+    setLocalTipo(tipo);
     if (visible && movementToEdit) {
       setConcepto(movementToEdit.concepto);
       setMonto(movementToEdit.monto.toString());
@@ -83,7 +85,7 @@ export default function ModalMovement({
     } else if (visible && !movementToEdit) {
       resetForm();
     }
-  }, [visible, movementToEdit, periodo]);
+  }, [visible, movementToEdit, periodo, tipo]);
 
   const isDateValid = (dateStr) => {
     return /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
@@ -122,7 +124,7 @@ export default function ModalMovement({
         monto,
         fecha,
         periodo: selectedPeriod,
-        tipo: tipo,
+        tipo: localTipo,
         categoria_id: categoriaId,
         fotoUri: imageUri,
       });
@@ -181,7 +183,7 @@ export default function ModalMovement({
         <View
           style={[
             styles.container,
-            { backgroundColor: tipo === "ingreso" ? "#f0fdf4" : "#fef2f2" },
+            { backgroundColor: localTipo === "ingreso" ? "#f0fdf4" : "#fef2f2" },
           ]}
         >
           {/* Header */}
@@ -189,13 +191,13 @@ export default function ModalMovement({
             style={[
               styles.header,
               {
-                backgroundColor: tipo === "ingreso" ? "#dcfce7" : "#fecaca",
-                borderBottomColor: tipo === "ingreso" ? "#166534" : "#7f1d1d",
+                backgroundColor: localTipo === "ingreso" ? "#dcfce7" : "#fecaca",
+                borderBottomColor: localTipo === "ingreso" ? "#166534" : "#7f1d1d",
               },
             ]}
           >
             <Text style={styles.headerTitle}>
-              {tipo === "ingreso"
+              {localTipo === "ingreso"
                 ? movementToEdit
                   ? "Editar Ingreso"
                   : "Nuevo Ingreso"
@@ -207,6 +209,50 @@ export default function ModalMovement({
               <Ionicons name="close" size={24} color="#6c757d" />
             </Pressable>
           </View>
+
+          {/* Segmented Control solo para nuevos movimientos */}
+          {!movementToEdit && (
+            <View style={styles.typeToggleContainer}>
+              <Pressable
+                style={[
+                  styles.typeToggleButton,
+                  localTipo === "egreso" && styles.typeToggleButtonActiveEgreso,
+                ]}
+                onPress={() => {
+                  setLocalTipo("egreso");
+                  setCategoriaId(null);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.typeToggleText,
+                    localTipo === "egreso" && styles.typeToggleTextActive,
+                  ]}
+                >
+                  Egreso
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.typeToggleButton,
+                  localTipo === "ingreso" && styles.typeToggleButtonActiveIngreso,
+                ]}
+                onPress={() => {
+                  setLocalTipo("ingreso");
+                  setCategoriaId(null);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.typeToggleText,
+                    localTipo === "ingreso" && styles.typeToggleTextActive,
+                  ]}
+                >
+                  Ingreso
+                </Text>
+              </Pressable>
+            </View>
+          )}
 
           <Pressable
             style={[styles.periodoChip, { alignSelf: "center", marginTop: 10 }]}
@@ -499,6 +545,44 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: "700",
+    color: "#212529",
+  },
+  typeToggleContainer: {
+    flexDirection: "row",
+    marginHorizontal: 20,
+    marginTop: 16,
+    backgroundColor: "#e9ecef",
+    borderRadius: 12,
+    padding: 4,
+  },
+  typeToggleButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  typeToggleButtonActiveEgreso: {
+    backgroundColor: "#fecaca",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  typeToggleButtonActiveIngreso: {
+    backgroundColor: "#dcfce7",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  typeToggleText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#6c757d",
+  },
+  typeToggleTextActive: {
     color: "#212529",
   },
   periodoChip: {

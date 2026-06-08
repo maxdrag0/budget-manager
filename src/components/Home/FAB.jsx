@@ -3,21 +3,24 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRef } from "react";
 
 /**
- * Floating Action Button posicionado abajo a la derecha.
- * Incluye una micro-animación de escala al presionar.
+ * Floating Action Button con diseño premium.
+ * Sombras pronunciadas, sin borde plano, animación orgánica de rebote.
  */
 export default function FAB({
   onPress,
   iconName = "add",
-  bgColor = "#4ade80",
+  bgColor = "#dcfce7",
   iconColor = "#166534",
+  size = 58,
   style,
 }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.88,
+      toValue: 0.85,
+      friction: 5,
+      tension: 300,
       useNativeDriver: true,
     }).start();
   };
@@ -25,28 +28,34 @@ export default function FAB({
   const handlePressOut = () => {
     Animated.spring(scaleAnim, {
       toValue: 1,
-      friction: 3,
-      tension: 120,
+      friction: 4,
+      tension: 200,
       useNativeDriver: true,
     }).start();
   };
 
   return (
-    <Animated.View style={[style, { transform: [{ scale: scaleAnim }] }]}>
+    <Animated.View
+      style={[
+        style,
+        { transform: [{ scale: scaleAnim }] },
+      ]}
+    >
       <Pressable
         style={[
           styles.fab,
           {
             backgroundColor: bgColor,
-            borderColor: iconColor,
-            borderWidth: 1.5,
+            width: size,
+            height: size,
+            borderRadius: size / 2,
           },
         ]}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
-        <Ionicons name={iconName} size={28} color={iconColor} />
+        <Ionicons name={iconName} size={26} color={iconColor} />
       </Pressable>
     </Animated.View>
   );
@@ -54,11 +63,13 @@ export default function FAB({
 
 const styles = StyleSheet.create({
   fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 2,
+    // Sombra pronunciada para aspecto premium
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
   },
 });

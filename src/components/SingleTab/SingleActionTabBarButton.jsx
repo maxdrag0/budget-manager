@@ -15,6 +15,7 @@ export const SingleActionTabBarButton = ({
         iconName={iconName}
         bgColor={bgColor}
         iconColor={iconColor}
+        size={54}
       />
     </View>
   );
@@ -25,6 +26,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    top: -18,
+    top: -20,
   },
 });

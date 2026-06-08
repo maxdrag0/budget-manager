@@ -5,6 +5,7 @@ import incomesReducer from "./incomesSlice/incomesSlice";
 import authReducer from "./authSlice/authSlice";
 import userReducer from "./userSlice/userSlice";
 import periodReducer from "./periodSlice/periodSlice";
+import groupsReducer from "./groupsSlice/groupsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,5 +15,6 @@ export const store = configureStore({
     auth: authReducer,
     user: userReducer,
     period: periodReducer,
+    groups: groupsReducer,
   },
 });

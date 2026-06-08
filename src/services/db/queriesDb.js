@@ -3,12 +3,13 @@ import { getDB } from "./initDb";
 
 // === MOVIMIENTOS (EXPENSES) ===
 
-export const insertMovementsLocal = async (userId, expense) => {
+export const insertMovementsLocal = async (userId, expense, fromSync = false) => {
   const db = await getDB();
   const now = new Date().toISOString();
+  const syncValue = fromSync ? 1 : 0;
   await db.runAsync(
     `INSERT INTO movements (id, user_id, concepto, monto, fecha, periodo, categoria_id, tipo, foto_uri, foto_url, sincronizado, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        concepto = excluded.concepto,
        monto = excluded.monto,
@@ -17,7 +18,8 @@ export const insertMovementsLocal = async (userId, expense) => {
        categoria_id = excluded.categoria_id,
        tipo = excluded.tipo,
        foto_uri = COALESCE(excluded.foto_uri, foto_uri),
-       sincronizado = 0,
+       foto_url = COALESCE(excluded.foto_url, foto_url),
+       sincronizado = excluded.sincronizado,
        updated_at = excluded.updated_at;`,
     [
       expense.id,
@@ -30,6 +32,7 @@ export const insertMovementsLocal = async (userId, expense) => {
       expense.tipo,
       expense.fotoUri ?? null,
       expense.fotoUrl ?? null,
+      syncValue,
       now,
     ],
   );
@@ -99,19 +102,20 @@ export const deleteUserProfilePhotoLocal = async (userId) => {
 };
 // === INGRESOS (INCOMES) ===
 
-export const insertIncomeLocal = async (userId, periodo, monto) => {
+export const insertIncomeLocal = async (userId, periodo, monto, fromSync = false) => {
   const db = await getDB();
   const now = new Date().toISOString();
+  const syncValue = fromSync ? 1 : 0;
 
   // ON CONFLICT actualiza el monto si el usuario edita el presupuesto del mismo mes
   await db.runAsync(
     `INSERT INTO incomes (periodo, user_id, ingreso_proyectado, sincronizado, updated_at)
-     VALUES (?, ?, ?, 0, ?)
+     VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(periodo, user_id) DO UPDATE SET
      ingreso_proyectado = excluded.ingreso_proyectado,
-     sincronizado = 0,
+     sincronizado = excluded.sincronizado,
      updated_at = excluded.updated_at;`,
-    [periodo, userId, monto, now],
+    [periodo, userId, monto, syncValue, now],
   );
 };
 
@@ -154,13 +158,15 @@ export const marcarIngresoSincronizado = async (userId, periodo) => {
 export const upsertUserProfileLocal = async (
   userId,
   { displayName, name, lastname, email, photoLocalUri, photoUrl },
+  fromSync = false
 ) => {
   const db = await getDB();
   const now = new Date().toISOString();
+  const syncValue = fromSync ? 1 : 0;
 
   await db.runAsync(
     `INSERT INTO user_profile (user_id, display_name, name, lastname, email, photo_local_uri, photo_url, sincronizado, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(user_id) DO UPDATE SET
        display_name = COALESCE(excluded.display_name, display_name),
        name = COALESCE(excluded.name, name),
@@ -168,7 +174,7 @@ export const upsertUserProfileLocal = async (
        email = COALESCE(excluded.email, email),
        photo_local_uri = COALESCE(excluded.photo_local_uri, photo_local_uri),
        photo_url = COALESCE(excluded.photo_url, photo_url),
-       sincronizado = 0,
+       sincronizado = excluded.sincronizado,
        updated_at = excluded.updated_at;`,
     [
       userId,
@@ -178,6 +184,7 @@ export const upsertUserProfileLocal = async (
       email ?? null,
       photoLocalUri ?? null,
       photoUrl ?? null,
+      syncValue,
       now,
     ],
   );

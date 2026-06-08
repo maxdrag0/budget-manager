@@ -1,6 +1,6 @@
 // ============================================================
 
-import { doc, setDoc, deleteDoc } from "firebase/firestore";
+import { doc, setDoc, deleteDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { db, storage } from "./firebase";
 import { uploadMovementPhoto, uploadProfilePhoto } from "./storageService";
 import { ref as storageRef, deleteObject } from "firebase/storage";
@@ -154,5 +154,59 @@ export const deleteProfilePhotoFromFirebase = async (userId) => {
       error.message,
     );
     return false;
+  }
+};
+
+// ============================================================
+//  SYNC DOWN (FETCH FROM FIREBASE)
+// ============================================================
+
+export const fetchUserProfileFromFirebase = async (userId) => {
+  try {
+    const profileRef = doc(db, "users", userId);
+    const docSnap = await getDoc(profileRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    return null;
+  } catch (error) {
+    console.warn("Fallo al descargar Perfil:", error.message);
+    return null;
+  }
+};
+
+export const fetchIncomesFromFirebase = async (userId) => {
+  try {
+    const incomesRef = collection(db, "users", userId, "incomes");
+    const querySnapshot = await getDocs(incomesRef);
+    const incomes = [];
+    querySnapshot.forEach((docSnap) => {
+      incomes.push({
+        periodo: docSnap.id,
+        ...docSnap.data()
+      });
+    });
+    return incomes;
+  } catch (error) {
+    console.warn("Fallo al descargar Ingresos:", error.message);
+    return [];
+  }
+};
+
+export const fetchMovementsFromFirebase = async (userId) => {
+  try {
+    const movementsRef = collection(db, "users", userId, "movements");
+    const querySnapshot = await getDocs(movementsRef);
+    const movements = [];
+    querySnapshot.forEach((docSnap) => {
+      movements.push({
+        id: docSnap.id,
+        ...docSnap.data()
+      });
+    });
+    return movements;
+  } catch (error) {
+    console.warn("Fallo al descargar Movimientos:", error.message);
+    return [];
   }
 };

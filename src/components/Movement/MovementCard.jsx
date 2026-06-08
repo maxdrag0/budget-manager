@@ -1,6 +1,7 @@
 import { Text, View, Pressable, StyleSheet, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { CATEGORIES } from "@/constants"; // Importamos los colores
+import { CATEGORIES } from "@/constants";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function MovementCard({
   item,
@@ -8,6 +9,7 @@ export default function MovementCard({
   onLongPress,
   isSelected,
 }) {
+  const { colors } = useTheme();
   const {
     concepto,
     fecha,
@@ -26,22 +28,23 @@ export default function MovementCard({
   const categoryData = CATEGORIES.find(
     (c) => Number(c.id) === Number(categoria_id),
   );
+
   const getCardStyle = () => {
     if (isSelected) {
       return {
-        backgroundColor: "#e0f2fe",
-        borderColor: "#0284c7",
+        backgroundColor: colors.selectedCardBg,
+        borderColor: colors.selectedCardBorder,
       };
     }
     if (esIngreso) {
       return {
-        backgroundColor: "#e8fced", // Verde muy suave y opaco
-        borderColor: "#28cb52", // Borde del mismo verde que el monto
+        backgroundColor: colors.incomeCardBg,
+        borderColor: colors.incomeCardBorder,
       };
     } else {
       return {
-        backgroundColor: "#fde8e8", // Rojo muy suave y opaco
-        borderColor: "#ef4444", // Borde del mismo rojo que el monto
+        backgroundColor: colors.expenseCardBg,
+        borderColor: colors.expenseCardBorder,
       };
     }
   };
@@ -60,19 +63,26 @@ export default function MovementCard({
               (esIngreso ? "arrow-down-circle-outline" : "receipt-outline")
             }
             size={20}
-            color={categoryData?.color || (esIngreso ? "#28cb52" : "#333")}
+            color={categoryData?.color || (esIngreso ? colors.success : colors.icon)}
           />
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.title}>{concepto}</Text>
-          <Text style={styles.date}>{fecha}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            {concepto}
+          </Text>
+          <Text style={[styles.date, { color: colors.textSecondary }]}>
+            {fecha}
+          </Text>
         </View>
       </View>
 
       <View style={styles.rightContent}>
         <Text
-          style={[styles.amount, { color: esIngreso ? "#28cb52" : "#ef4444" }]}
+          style={[
+            styles.amount,
+            { color: esIngreso ? colors.success : colors.danger },
+          ]}
         >
           {esIngreso ? "+" : "-"}${monto}
         </Text>

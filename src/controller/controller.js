@@ -18,6 +18,9 @@ import {
   syncIncomeToFirebase,
   syncUserProfileToFirebase,
   deleteProfilePhotoFromFirebase,
+  fetchUserProfileFromFirebase,
+  fetchIncomesFromFirebase,
+  fetchMovementsFromFirebase,
 } from "@/services/firebase/syncService";
 import {
   createMovement,
@@ -285,5 +288,64 @@ export const eliminarFotoPerfilUsuario = async (userId, dispatch) => {
     });
   } catch (error) {
     console.error("Error al eliminar foto de perfil en controlador:", error);
+  }
+};
+
+/**
+ * 8. Sync Down desde Firebase (Se llama al iniciar sesión)
+ */
+export const syncDownFromFirebase = async (userId, dispatch) => {
+  if (!userId) return;
+
+  try {
+    console.log("⬇️ Iniciando Sync Down desde Firebase...");
+
+    // 1. Descargar Perfil
+    const profile = await fetchUserProfileFromFirebase(userId);
+    if (profile) {
+      await upsertUserProfileLocal(
+        userId,
+        {
+          displayName: profile.display_name,
+          name: profile.name,
+          lastname: profile.lastname,
+          email: profile.email,
+          photoUrl: profile.photo_url,
+        },
+        true // fromSync = true
+      );
+    }
+
+    // 2. Descargar Ingresos
+    const incomes = await fetchIncomesFromFirebase(userId);
+    for (const inc of incomes) {
+      await insertIncomeLocal(userId, inc.periodo, inc.ingreso_proyectado, true);
+    }
+
+    // 3. Descargar Movimientos
+    const movements = await fetchMovementsFromFirebase(userId);
+    for (const mov of movements) {
+      // Mapear de Firebase a formato local
+      const expense = {
+        id: mov.id,
+        concepto: mov.concepto,
+        monto: mov.monto,
+        fecha: mov.fecha,
+        periodo: mov.periodo,
+        categoria_id: mov.categoria_id,
+        tipo: mov.tipo,
+        fotoUrl: mov.foto_url,
+      };
+      await insertMovementsLocal(userId, expense, true);
+    }
+
+    console.log("✅ Sync Down completado con éxito.");
+    
+    // Al finalizar la descarga, recargamos el perfil en Redux para que la UI se entere
+    await cargarPerfilUsuario(userId, dispatch);
+    
+    // Si la pantalla ya está montada, las funciones `cargarDatosDelPeriodo` se encargarán de actualizar los movimientos.
+  } catch (error) {
+    console.error("❌ Error en Sync Down:", error);
   }
 };

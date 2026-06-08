@@ -73,6 +73,56 @@ export const initLocalDB = async () => {
       await db.execAsync("ALTER TABLE user_profile ADD COLUMN email TEXT;");
     }
 
+    // === TABLAS DE GRUPOS ===
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS groups (
+        id TEXT PRIMARY KEY NOT NULL,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        sincronizado INTEGER DEFAULT 0
+      );
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS group_members (
+        id TEXT PRIMARY KEY NOT NULL,
+        group_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        user_id TEXT,
+        FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
+      );
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS group_expenses (
+        id TEXT PRIMARY KEY NOT NULL,
+        group_id TEXT NOT NULL,
+        description TEXT NOT NULL,
+        amount REAL NOT NULL,
+        paid_by_member_id TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        sincronizado INTEGER DEFAULT 0,
+        foto_uri TEXT,
+        foto_url TEXT,
+        FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+        FOREIGN KEY (paid_by_member_id) REFERENCES group_members(id)
+      );
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS group_expense_splits (
+        expense_id TEXT NOT NULL,
+        member_id TEXT NOT NULL,
+        PRIMARY KEY (expense_id, member_id),
+        FOREIGN KEY (expense_id) REFERENCES group_expenses(id) ON DELETE CASCADE,
+        FOREIGN KEY (member_id) REFERENCES group_members(id) ON DELETE CASCADE
+      );
+    `);
+
+    // Habilitamos las foreign keys
+    await db.execAsync("PRAGMA foreign_keys = ON;");
+
     return true;
   } catch (error) {
     console.error("❌ SQLite: Error crítico inicializando tablas:", error);

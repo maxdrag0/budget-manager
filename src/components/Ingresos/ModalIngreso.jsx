@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function ModalIngreso({
   visible,
@@ -19,6 +20,7 @@ export default function ModalIngreso({
   periodo,
   valorActual,
 }) {
+  const { colors } = useTheme();
   const [monto, setMonto] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -58,33 +60,77 @@ export default function ModalIngreso({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.overlay}
+        style={[styles.overlay, { backgroundColor: colors.overlay }]}
       >
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            { backgroundColor: colors.modalBackground },
+          ]}
+        >
           {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Proyectar Ingreso</Text>
+          <View
+            style={[
+              styles.header,
+              { borderBottomColor: colors.separator },
+            ]}
+          >
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
+              Proyectar Ingreso
+            </Text>
             <Pressable onPress={handleClose} hitSlop={10}>
-              <Ionicons name="close" size={24} color="#6c757d" />
+              <Ionicons
+                name="close"
+                size={24}
+                color={colors.textSecondary}
+              />
             </Pressable>
           </View>
 
           {/* Chip del periodo actual */}
-          <View style={styles.periodoChip}>
-            <Ionicons name="calendar-outline" size={14} color="#495057" />
-            <Text style={styles.periodoText}>Periodo: {periodo}</Text>
+          <View
+            style={[
+              styles.periodoChip,
+              { backgroundColor: colors.chipBackground },
+            ]}
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={14}
+              color={colors.chipText}
+            />
+            <Text style={[styles.periodoText, { color: colors.chipText }]}>
+              Periodo: {periodo}
+            </Text>
           </View>
 
           <View style={styles.formContent}>
             {/* Monto */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Monto Estimado</Text>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>
+                Monto Estimado
+              </Text>
               <View style={styles.montoWrapper}>
-                <Text style={styles.currencySymbol}>$</Text>
+                <Text
+                  style={[
+                    styles.currencySymbol,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  $
+                </Text>
                 <TextInput
-                  style={[styles.input, styles.montoInput]}
+                  style={[
+                    styles.input,
+                    styles.montoInput,
+                    {
+                      borderColor: colors.inputBorder,
+                      backgroundColor: colors.inputBackground,
+                      color: colors.inputText,
+                    },
+                  ]}
                   placeholder="0.00"
-                  placeholderTextColor="#adb5bd"
+                  placeholderTextColor={colors.placeholder}
                   value={monto}
                   onChangeText={setMonto}
                   keyboardType="numeric"
@@ -97,7 +143,10 @@ export default function ModalIngreso({
             <Pressable
               style={[
                 styles.submitButton,
-                (!isFormValid || isSaving) && styles.submitButtonDisabled,
+                { backgroundColor: colors.success },
+                (!isFormValid || isSaving) && {
+                  backgroundColor: colors.textMuted,
+                },
               ]}
               onPress={handleSubmit}
               disabled={!isFormValid || isSaving}
@@ -126,10 +175,8 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.45)",
   },
   container: {
-    backgroundColor: "#fff",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -147,19 +194,16 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#212529",
   },
   periodoChip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     alignSelf: "flex-start",
-    backgroundColor: "#e9ecef",
     paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -168,7 +212,6 @@ const styles = StyleSheet.create({
   periodoText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#495057",
   },
   formContent: {
     paddingTop: 8,
@@ -181,18 +224,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#495057",
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#dee2e6",
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: "#212529",
-    backgroundColor: "#f8f9fa",
   },
   montoWrapper: {
     flexDirection: "row",
@@ -201,7 +240,6 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#495057",
     marginRight: 8,
   },
   montoInput: {
@@ -212,12 +250,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#28cb52", // Color de éxito para ingresos
     paddingVertical: 14,
     borderRadius: 12,
-  },
-  submitButtonDisabled: {
-    backgroundColor: "#adb5bd",
   },
   submitButtonText: {
     fontSize: 16,

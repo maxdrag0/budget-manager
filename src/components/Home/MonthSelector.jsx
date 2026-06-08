@@ -7,6 +7,7 @@ import {
   Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function MonthSelector({
   currentMonth,
@@ -15,6 +16,8 @@ export default function MonthSelector({
   onNext,
   onToday,
 }) {
+  const { colors } = useTheme();
+
   const meses = [
     "Enero",
     "Febrero",
@@ -35,25 +38,33 @@ export default function MonthSelector({
       <View style={styles.container}>
         {/* Botón Anterior */}
         <TouchableOpacity onPress={onPrev} style={styles.arrowButton}>
-          <Ionicons name="chevron-back" size={26} color="#333" />
+          <Ionicons name="chevron-back" size={26} color={colors.icon} />
         </TouchableOpacity>
 
         {/* Contenedor central con la Fecha */}
         <View style={styles.dateContainer}>
-          <Text style={styles.dateText}>
+          <Text style={[styles.dateText, { color: colors.text }]}>
             {meses[currentMonth]} {currentYear}
           </Text>
         </View>
 
         {/* Botón Siguiente */}
         <TouchableOpacity onPress={onNext} style={styles.arrowButton}>
-          <Ionicons name="chevron-forward" size={26} color="#333" />
+          <Ionicons name="chevron-forward" size={26} color={colors.icon} />
         </TouchableOpacity>
       </View>
 
       {/* Botón "Hoy" corregido con un Text adentro */}
-      <Pressable onPress={onToday} style={styles.todayButton}>
-        <Text style={styles.todayText}>Ir al mes actual</Text>
+      <Pressable
+        onPress={onToday}
+        style={[
+          styles.todayButton,
+          { backgroundColor: colors.chipBackground },
+        ]}
+      >
+        <Text style={[styles.todayText, { color: colors.chipText }]}>
+          Ir al mes actual
+        </Text>
       </Pressable>
     </View>
   );
@@ -64,37 +75,34 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    paddingBottom: 10,
+    paddingBottom: 2,
   },
   container: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 15,
-    paddingTop: 10,
+    paddingTop: 4,
     backgroundColor: "transparent",
   },
   arrowButton: {
-    padding: 10,
+    padding: 8,
   },
   dateContainer: {
     flex: 1,
     alignItems: "center",
   },
   dateText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
-    color: "#212529",
   },
   todayButton: {
-    backgroundColor: "#e9ecef",
-    paddingVertical: 6,
-    paddingHorizontal: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
     borderRadius: 20,
-    marginTop: -5,
+    marginTop: -4,
   },
   todayText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
-    color: "#495057",
   },
 });
