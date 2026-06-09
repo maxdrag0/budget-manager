@@ -8,6 +8,7 @@ const initialState = {
   email: null,
   photoURL: null,
   isPremium: false,
+  adActionCount: 0,
 };
 
 const userSlice = createSlice({
@@ -27,6 +28,9 @@ const userSlice = createSlice({
     setPremium: (state, action) => {
       state.isPremium = action.payload;
     },
+    incrementAdActionCount: (state) => {
+      state.adActionCount += 1;
+    },
     clearUserProfile: (state) => {
       state.uid = null;
       state.displayName = null;
@@ -35,10 +39,11 @@ const userSlice = createSlice({
       state.email = null;
       state.photoURL = null;
       state.isPremium = false;
+      state.adActionCount = 0;
     },
   },
 });
 
-export const { setUserProfile, clearUserProfile, setPremium } = userSlice.actions;
+export const { setUserProfile, clearUserProfile, setPremium, incrementAdActionCount } = userSlice.actions;
 
 export default userSlice.reducer;

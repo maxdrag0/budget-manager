@@ -13,6 +13,7 @@ export default function FAB({
   iconColor = "#166534",
   size = 58,
   style,
+  disabled = false,
 }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -54,6 +55,7 @@ export default function FAB({
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        disabled={disabled}
       >
         <Ionicons name={iconName} size={26} color={iconColor} />
       </Pressable>

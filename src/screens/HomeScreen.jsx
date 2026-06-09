@@ -19,9 +19,11 @@ import {
 
 import { usePeriodo } from "@/hooks/usePeriodo";
 import { useTheme } from "@/hooks/useTheme";
-import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
+import { InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
+import { adConfig } from "@/config/adsConfig";
+import { incrementAdActionCount } from "@/store/userSlice/userSlice";
 
-const adUnitId = TestIds.INTERSTITIAL;
+const adUnitId = adConfig.interstitialId;
 
 const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: true,
@@ -48,6 +50,7 @@ export default function HomeScreen() {
   const movements = useSelector((state) => state.movements.value);
   const incomes = useSelector((state) => state.incomes.value);
   const isPremium = useSelector((state) => state.user.isPremium);
+  const adActionCount = useSelector((state) => state.user.adActionCount);
 
   const [loaded, setLoaded] = useState(false);
   const [pendingModalOpen, setPendingModalOpen] = useState(false);
@@ -154,10 +157,14 @@ export default function HomeScreen() {
 
   const handleFabPress = () => {
     if (!isPremium && loaded) {
-      interstitial.show();
-    } else {
-      openModalDirectly();
+      if (adActionCount === 0 || adActionCount % 3 === 0) {
+        interstitial.show();
+        dispatch(incrementAdActionCount());
+        return;
+      }
     }
+    dispatch(incrementAdActionCount());
+    openModalDirectly();
   };
 
   // Datos derivados de Redux

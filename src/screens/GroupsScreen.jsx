@@ -122,6 +122,15 @@ export default function GroupsScreen() {
         </Text>
       </View>
 
+      {!isPremium && (
+        <View style={[styles.premiumBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Ionicons name="lock-closed" size={20} color={colors.primary} />
+          <Text style={[styles.premiumBannerText, { color: colors.textSecondary }]}>
+            Suscripción Premium requerida para interactuar con los grupos.
+          </Text>
+        </View>
+      )}
+
       {groups.length > 0 ? (
         <FlatList
           data={groups}
@@ -149,19 +158,14 @@ export default function GroupsScreen() {
 
       <FAB
         onPress={() => {
-          if (!isPremium) {
-            Alert.alert(
-              "Función Premium",
-              "Para crear grupos ilimitados y dividir gastos con tus amigos, debes adquirir la suscripción Premium."
-            );
-          } else {
-            setModalVisible(true);
-          }
+          if (!isPremium) return;
+          setModalVisible(true);
         }}
         iconName="add"
-        bgColor={colors.primary}
-        iconColor="#fff"
-        style={styles.fab}
+        bgColor={isPremium ? colors.primary : colors.card}
+        iconColor={isPremium ? "#fff" : colors.textMuted}
+        style={[styles.fab, !isPremium && { elevation: 0, shadowOpacity: 0, borderWidth: 1, borderColor: colors.border }]}
+        disabled={!isPremium}
       />
 
       <ModalCreateGroup
@@ -253,5 +257,20 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 24,
     right: 24,
+  },
+  premiumBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  premiumBannerText: {
+    marginLeft: 10,
+    fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
   },
 });
