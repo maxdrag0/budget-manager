@@ -25,10 +25,6 @@ import { incrementAdActionCount } from "@/store/userSlice/userSlice";
 
 const adUnitId = adConfig.interstitialId;
 
-const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: true,
-});
-
 export default function HomeScreen() {
   const route = useRoute();
   const navigation = useNavigation();
@@ -54,6 +50,7 @@ export default function HomeScreen() {
 
   const [loaded, setLoaded] = useState(false);
   const [pendingModalOpen, setPendingModalOpen] = useState(false);
+  const interstitialRef = useRef(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [incomeModalVisible, setIncomeModalVisible] = useState(false);
@@ -124,6 +121,14 @@ export default function HomeScreen() {
   useEffect(() => {
     if (isPremium) return;
 
+    if (!interstitialRef.current) {
+      interstitialRef.current = InterstitialAd.createForAdRequest(adUnitId, {
+        requestNonPersonalizedAdsOnly: true,
+      });
+    }
+
+    const interstitial = interstitialRef.current;
+
     const unsubscribe = interstitial.addAdEventListener(AdEventType.LOADED, () => {
       setLoaded(true);
     });
@@ -156,9 +161,9 @@ export default function HomeScreen() {
   };
 
   const handleFabPress = () => {
-    if (!isPremium && loaded) {
+    if (!isPremium && loaded && interstitialRef.current) {
       if (adActionCount === 0 || adActionCount % 3 === 0) {
-        interstitial.show();
+        interstitialRef.current.show();
         dispatch(incrementAdActionCount());
         return;
       }
