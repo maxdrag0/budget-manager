@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Budget Manager",
+    "name": "ControlApp",
     "slug": "budget-manager",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "budgetmanager",
+    "scheme": "controlApp",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "cover",
@@ -22,7 +22,7 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.ar.mad.budgetmanager"
+      "package": "com.ar.mad.controlApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"

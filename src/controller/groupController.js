@@ -65,10 +65,7 @@ export const crearGrupo = async (userId, name, memberNames, dispatch) => {
 
     // 3. Firebase (background)
     syncGroupToFirebase(userId, group, members).then((success) => {
-      if (success) {
-        marcarGrupoSincronizado(groupId);
-        console.log(`Grupo "${name}" sincronizado con Firebase.`);
-      }
+      marcarGrupoSincronizado(groupId);
     });
 
     return groupId;
@@ -147,7 +144,6 @@ export const agregarGastoGrupo = async (
       (success) => {
         if (success) {
           marcarGastoGrupoSincronizado(expenseId);
-          console.log(`Gasto "${description}" del grupo sincronizado.`);
         }
       },
     );
@@ -178,13 +174,7 @@ export const eliminarGastoGrupo = async (
     dispatch(setBalances(balances));
 
     // 4. Firebase
-    deleteGroupExpenseFromFirebase(userId, groupId, expenseId).then(
-      (success) => {
-        if (success) {
-          console.log(`Gasto ${expenseId} eliminado de Firebase.`);
-        }
-      },
-    );
+    deleteGroupExpenseFromFirebase(userId, groupId, expenseId);
   } catch (error) {
     console.error("Error eliminando gasto del grupo:", error);
   }
@@ -202,11 +192,7 @@ export const eliminarGrupo = async (userId, groupId, dispatch) => {
     await deleteGroupLocal(groupId);
 
     // 3. Firebase
-    deleteGroupFromFirebase(userId, groupId).then((success) => {
-      if (success) {
-        console.log(`Grupo ${groupId} eliminado de Firebase.`);
-      }
-    });
+    deleteGroupFromFirebase(userId, groupId);
   } catch (error) {
     console.error("Error eliminando grupo:", error);
   }

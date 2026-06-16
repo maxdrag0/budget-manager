@@ -39,23 +39,14 @@ import { setUserProfile } from "../store/userSlice/userSlice";
 export const cargarDatosDelPeriodo = async (userId, periodo, dispatch) => {
   // 1. EL ESCUDO: Bloqueamos la ejecución si las variables no están listas
   if (!userId || !periodo) {
-    console.log("⏳ Esperando resolución de userId o periodo...");
     return; // Abortamos silenciosamente
   }
 
   try {
-    console.log(
-      `🔍 Intentando cargar periodo en SQLite. userId: "${userId}", periodo: "${periodo}"`,
-    );
-
     // Lectura veloz desde SQLite
-    console.log("⏳ Leyendo gastos...");
     const movimientos = await getMovementsByPeriodLocal(userId, periodo);
-    console.log(`✅ Gastos leídos con éxito. Total: ${movimientos.length}`);
 
-    console.log("⏳ Leyendo ingresos...");
     const ingreso = await getIncomeByPeriodLocal(userId, periodo);
-    console.log(`✅ Ingresos leídos con éxito: ${ingreso}`);
 
     // Inyección a Redux para actualizar la UI
     dispatch(setMovements(movimientos));
@@ -76,7 +67,6 @@ export const guardarIngreso = async (userId, periodo, monto, dispatch) => {
     syncIncomeToFirebase(userId, periodo, numMonto).then((exito) => {
       if (exito) {
         marcarIngresoSincronizado(userId, periodo);
-        console.log(`Ingreso de ${periodo} sincronizado y marcado en SQLite.`);
       }
     });
   } catch (error) {
@@ -141,9 +131,6 @@ export const guardarMovimiento = async (
             }),
           );
         }
-        console.log(
-          `Gasto ${newMovement.concepto} sincronizado y marcado en SQLite.`,
-        );
       }
     });
   } catch (error) {
@@ -163,11 +150,7 @@ export const eliminarMovimiento = async (userId, movementId, dispatch) => {
     await deleteMovementLocal(movementId);
 
     // 3. Update Firebase asynchronously
-    deleteMovementFromFirebase(userId, movementId).then((success) => {
-      if (success) {
-        console.log(`Movimiento ${movementId} eliminado de Firebase.`);
-      }
-    });
+    deleteMovementFromFirebase(userId, movementId).then((success) => {});
   } catch (error) {
     console.error("Error eliminando movimiento:", error);
   }
@@ -228,8 +211,6 @@ export const guardarPerfilUsuario = async (
         if (result.photoURL) {
           dispatch(setUserProfile({ photoURL: result.photoURL }));
         }
-
-        console.log("Perfil sincronizado y marcado en SQLite.");
       }
     });
   } catch (error) {
@@ -260,11 +241,6 @@ export const cargarPerfilUsuario = async (userId, dispatch) => {
           photoURL: perfil.photo_local_uri || perfil.photo_url,
         }),
       );
-      console.log("✅ SQLite: Perfil cargado en Redux correctamente.");
-    } else {
-      console.log(
-        "ℹ️ SQLite: Aún no existe un perfil guardado para este usuario.",
-      );
     }
   } catch (error) {
     console.error("❌ Error al cargar el perfil desde SQLite:", error);
@@ -283,7 +259,6 @@ export const eliminarFotoPerfilUsuario = async (userId, dispatch) => {
     deleteProfilePhotoFromFirebase(userId).then((exito) => {
       if (exito) {
         marcarPerfilSincronizado(userId);
-        console.log("Foto de perfil eliminada de Firebase con éxito.");
       }
     });
   } catch (error) {
@@ -298,8 +273,6 @@ export const syncDownFromFirebase = async (userId, dispatch) => {
   if (!userId) return;
 
   try {
-    console.log("⬇️ Iniciando Sync Down desde Firebase...");
-
     // 1. Descargar Perfil
     const profile = await fetchUserProfileFromFirebase(userId);
     if (profile) {
@@ -312,14 +285,19 @@ export const syncDownFromFirebase = async (userId, dispatch) => {
           email: profile.email,
           photoUrl: profile.photo_url,
         },
-        true // fromSync = true
+        true,
       );
     }
 
     // 2. Descargar Ingresos
     const incomes = await fetchIncomesFromFirebase(userId);
     for (const inc of incomes) {
-      await insertIncomeLocal(userId, inc.periodo, inc.ingreso_proyectado, true);
+      await insertIncomeLocal(
+        userId,
+        inc.periodo,
+        inc.ingreso_proyectado,
+        true,
+      );
     }
 
     // 3. Descargar Movimientos
@@ -339,11 +317,9 @@ export const syncDownFromFirebase = async (userId, dispatch) => {
       await insertMovementsLocal(userId, expense, true);
     }
 
-    console.log("✅ Sync Down completado con éxito.");
-    
     // Al finalizar la descarga, recargamos el perfil en Redux para que la UI se entere
     await cargarPerfilUsuario(userId, dispatch);
-    
+
     // Si la pantalla ya está montada, las funciones `cargarDatosDelPeriodo` se encargarán de actualizar los movimientos.
   } catch (error) {
     console.error("❌ Error en Sync Down:", error);
