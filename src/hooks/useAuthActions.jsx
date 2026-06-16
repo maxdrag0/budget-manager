@@ -23,6 +23,17 @@ export const useAuthActions = () => {
       Alert.alert("Error", "Ingrese email y contraseña");
       return;
     }
+    
+    // Front-end validations for password
+    if (password.length < 6) {
+      Alert.alert("Contraseña débil", "La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    const hasNumber = /\d/;
+    if (!hasNumber.test(password)) {
+      Alert.alert("Contraseña débil", "La contraseña debe contener al menos un número.");
+      return;
+    }
     setLoading(true);
     const { error } = await registerWithEmail(email, password);
     if (error) {
